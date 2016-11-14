@@ -1,0 +1,15 @@
++language: go
+ +
+ +go:
+ +  - 1.7
+ +  - tip
+ +
+ +matrix:
+ +  allow_failures:
+ +    - go: tip
+ +
+ +before_install:
+ +    # The following lines make builds also work for forks. Builds of the origin repository are not affected
+ +    - mkdir -p $GOPATH/src/classmarkets/timex
+ +    - mv $GOPATH/src/github.com/$TRAVIS_REPO_SLUG $GOPATH/src/github.com/classmarkets/timex
+ +    - cd $GOPATH/src/github.com/classmarkets/timex
