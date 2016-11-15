@@ -23,6 +23,9 @@ func AddWeeks(t time.Time, weeks int, l *time.Location) time.Time {
 // of the next month after t. Otherwise t.Day() will equal t'.Day().
 func AddMonths(t time.Time, months int, l *time.Location) time.Time {
 	t1 := t.In(l).AddDate(0, months, 0)
+	if !IsLastDayOfMonth(t) {
+		return t1
+	}
 
 	d0 := t.Day()
 	d1 := t1.Day()
@@ -32,17 +35,14 @@ func AddMonths(t time.Time, months int, l *time.Location) time.Time {
 		t1 = t1.Add(-day)
 	}
 
-	if IsLastDayOfMonth(t) {
-		// we want to stick to the last day of the month
-		tmp, m1 := t1, t1.Month()
-		for {
-			tmp = tmp.Add(day)
-			if tmp.Month() != m1 {
-				break
-			}
-			t1 = tmp
+	// we want to stick to the last day of the month
+	tmp, m1 := t1, t1.Month()
+	for {
+		tmp = tmp.Add(day)
+		if tmp.Month() != m1 {
+			break
 		}
-
+		t1 = tmp
 	}
 
 	return t1
