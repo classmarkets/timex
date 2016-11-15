@@ -22,9 +22,10 @@ func AddWeeks(t time.Time, weeks int, l *time.Location) time.Time {
 }
 
 func addDuration(t0 time.Time, l *time.Location, d time.Duration) time.Time {
-	t1 := t0.Add(d).In(l)
+	t0 = t0.In(l)
+	t1 := t0.Add(d)
 
-	_, oldOffset := t0.In(l).Zone()
+	_, oldOffset := t0.Zone()
 	_, newOffset := t1.Zone()
 	diff := time.Duration(oldOffset-newOffset) * time.Second
 
@@ -35,11 +36,10 @@ func addDuration(t0 time.Time, l *time.Location, d time.Duration) time.Time {
 // the last day of its month then the returned time t' represents the last day
 // of the next month after t. Otherwise t.Day() will equal t'.Day().
 func AddMonths(t time.Time, months int, l *time.Location) time.Time {
-	t1 := t.In(l).AddDate(0, months, 0)
+	t = t.In(l)
+	t1 := t.AddDate(0, months, 0)
 
-	d0 := t.Day()
-	d1 := t1.Day()
-
+	d0, d1 := t.Day(), t1.Day()
 	if d1 != d0 && d1 == 1 {
 		// we overshot by 1 day due to normalization (see documentation of AddDate)
 		t1 = t1.Add(-day)
@@ -47,6 +47,7 @@ func AddMonths(t time.Time, months int, l *time.Location) time.Time {
 
 	if IsLastDayOfMonth(t) {
 		// we want to stick to the last day of the month
+		_, oldOffset := t1.Zone()
 		tmp, m1 := t1, t1.Month()
 		for {
 			tmp = tmp.Add(day)
@@ -56,6 +57,10 @@ func AddMonths(t time.Time, months int, l *time.Location) time.Time {
 			t1 = tmp
 		}
 
+		if _, newOffset := t1.Zone(); newOffset != oldOffset {
+			diff := time.Duration(oldOffset-newOffset) * time.Second
+			t1 = t1.Add(diff)
+		}
 	}
 
 	return t1
@@ -64,7 +69,7 @@ func AddMonths(t time.Time, months int, l *time.Location) time.Time {
 // IsLastDayOfMonth returns true if t is any time within the last day of the
 // month of t.
 func IsLastDayOfMonth(t time.Time) bool {
-	if t.Day() < 29 {
+	if t.Day() < 28 {
 		return false
 	}
 

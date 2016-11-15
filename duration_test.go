@@ -176,35 +176,40 @@ func TestAddMonths(t *testing.T) {
 			want:   time.Date(2016, 10, 1, 8, 0, 0, 0, berlin),
 			months: -1,
 		},
-		"february -> march": {
+		"february → march": {
 			t:      time.Date(2015, 02, 28, 8, 0, 0, 0, berlin),
 			want:   time.Date(2015, 03, 31, 8, 0, 0, 0, berlin),
 			months: 1,
 		},
-		"march -> february": {
+		"march → february": {
 			t:      time.Date(2015, 03, 31, 8, 0, 0, 0, berlin),
 			want:   time.Date(2015, 02, 28, 8, 0, 0, 0, berlin),
 			months: -1,
 		},
-		"february 28th -> march (leap year)": {
+		"february 28th → march (leap year)": {
 			t:      time.Date(2016, 02, 28, 8, 0, 0, 0, berlin),
 			want:   time.Date(2016, 03, 28, 8, 0, 0, 0, berlin),
 			months: 1,
 		},
-		"march -> february 28th (leap year)": {
+		"march → february 28th (leap year)": {
 			t:      time.Date(2016, 03, 28, 8, 0, 0, 0, berlin),
 			want:   time.Date(2016, 02, 28, 8, 0, 0, 0, berlin),
 			months: -1,
 		},
-		"february 29th -> march (leap year)": {
+		"february 29th → march (leap year)": {
 			t:      time.Date(2016, 02, 29, 8, 0, 0, 0, berlin),
 			want:   time.Date(2016, 03, 31, 8, 0, 0, 0, berlin),
 			months: 1,
 		},
-		"march -> february 29th (leap year)": {
+		"march → february 29th (leap year)": {
 			t:      time.Date(2016, 03, 31, 8, 0, 0, 0, berlin),
 			want:   time.Date(2016, 02, 29, 8, 0, 0, 0, berlin),
 			months: -1,
+		},
+		"leap year": {
+			t:      time.Date(2015, 02, 28, 8, 0, 0, 0, berlin),
+			want:   time.Date(2016, 02, 29, 8, 0, 0, 0, berlin),
+			months: 12,
 		},
 	}
 
