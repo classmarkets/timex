@@ -4,31 +4,18 @@ package timex
 
 import "time"
 
-const (
-	day  = 24 * time.Hour
-	week = 7 * day
-)
+const day = 24 * time.Hour
 
 // AddDays returns the result of adding a given amount of days to t and
 // accounts for any DST changes at location l.
 func AddDays(t time.Time, days int, l *time.Location) time.Time {
-	return addDuration(t, l, time.Duration(days)*day)
+	return t.In(l).AddDate(0, 0, days)
 }
 
 // AddWeeks returns the result of adding a given amount of weeks to t and
 // accounts for any DST changes at location l.
 func AddWeeks(t time.Time, weeks int, l *time.Location) time.Time {
-	return addDuration(t, l, time.Duration(weeks)*week)
-}
-
-func addDuration(t0 time.Time, l *time.Location, d time.Duration) time.Time {
-	t1 := t0.Add(d).In(l)
-
-	_, oldOffset := t0.In(l).Zone()
-	_, newOffset := t1.Zone()
-	diff := time.Duration(oldOffset-newOffset) * time.Second
-
-	return t1.Add(diff)
+	return t.In(l).AddDate(0, 0, weeks*7)
 }
 
 // AddMonths adds the given amount of months to t. Additionally if t represents
