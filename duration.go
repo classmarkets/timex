@@ -22,27 +22,41 @@ func AddWeeks(t time.Time, weeks int, l *time.Location) time.Time {
 // the last day of its month then the returned time t' represents the last day
 // of the next month after t. Otherwise t.Day() will equal t'.Day().
 func AddMonths(t time.Time, months int, l *time.Location) time.Time {
-	t1 := t.In(l).AddDate(0, months, 0)
-	if !IsLastDayOfMonth(t) {
-		return t1
-	}
-
-	d0 := t.Day()
-	d1 := t1.Day()
-
-	if d1 != d0 && d1 == 1 {
-		// we overshot by 1 day due to normalization (see documentation of AddDate)
-		t1 = t1.Add(-day)
-	}
-
-	// we want to stick to the last day of the month
-	tmp, m1 := t1, t1.Month()
-	for {
-		tmp = tmp.Add(day)
-		if tmp.Month() != m1 {
-			break
+	t = t.In(l)
+	t1 := t.AddDate(0, months, 0)
+	d0, d1 := t.Day(), t1.Day()
+	if d1 != d0 {
+		// due to normalization in AddDate we might need to correct
+		// t1. See documentation of AddDate.
+		if months > 0 && d1 == 1 {
+			// we overshot by 1 day
+			t1 = t1.Add(-day)
 		}
-		t1 = tmp
+		if months < 0 {
+			if t1.Month() == t.Month() {
+				// ended up in the same month due to normalization
+				// worst case: 2015-03-31 - 1month = 2015-02-31 = 2015-03-03
+				diff := time.Duration(t1.Day()) * day
+				t1 = t1.Add(-diff)
+			}
+		}
+	}
+
+	if IsLastDayOfMonth(t) {
+		_, oldOffset := t1.Zone()
+		tmp, m1 := t1, t1.Month()
+		for {
+			tmp = tmp.Add(day)
+			if tmp.Month() != m1 {
+				break
+			}
+			t1 = tmp
+		}
+
+		if _, newOffset := t1.Zone(); newOffset != oldOffset {
+			diff := time.Duration(oldOffset-newOffset) * time.Second
+			t1 = t1.Add(diff)
+		}
 	}
 
 	return t1
@@ -51,9 +65,11 @@ func AddMonths(t time.Time, months int, l *time.Location) time.Time {
 // IsLastDayOfMonth returns true if t is any time within the last day of the
 // month of t.
 func IsLastDayOfMonth(t time.Time) bool {
-	if t.Day() < 29 {
+	if t.Day() < 28 {
 		return false
 	}
 
+	// by definition t is the last day of the month if adding another day would
+	// result in a time within the next month.
 	return t.Add(day).Month() != t.Month()
 }
